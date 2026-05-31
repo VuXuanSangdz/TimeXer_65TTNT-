@@ -9,8 +9,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from src.data.loaders import ExogenousForecastDataset, load_csv_dataset, split_by_time
-from src.models.baselines import BASELINE_MODELS
-from src.models.timexer import TimeXer
+from models.baselines import BASELINE_MODELS
+from models.TimeXer import TimeXer
 
 
 @dataclass

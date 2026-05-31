@@ -139,9 +139,11 @@ Forecast outputs are saved as numerical results and summary files under `./resul
 ## Project Structure
 
 ```
+├── models/                # TimeXer + baseline models (main)
+├── layers/                # Embedding layers (patch, variate, global token)
 ├── data/private/          # Face head-pose time series (private)
 ├── data/public/           # Weather CO2 benchmark (public)
-├── src/models/            # TimeXer + baselines
+├── src/                   # Data loaders, trainer, utils
 ├── experiments/           # RQ1, RQ2, RQ3 scripts
 ├── results/               # Quantitative & qualitative results
 ├── scripts/               # run_all, extract_from_webcam

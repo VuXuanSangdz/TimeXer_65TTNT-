@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from experiments.config import DATASETS, build_loaders, get_device
-from src.models.timexer import TimeXerAblation
+from models.TimeXer import TimeXerAblation
 from src.utils.metrics import evaluate_model
 from src.utils.trainer import Trainer
 
