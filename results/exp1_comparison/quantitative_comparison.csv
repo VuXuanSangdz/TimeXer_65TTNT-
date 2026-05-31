@@ -1,0 +1,11 @@
+Dataset,DatasetKey,Model,MSE,MAE,RMSE
+Face Head-Pose (Private),private,TimeXer,1.0302,0.8605,1.015
+Face Head-Pose (Private),private,iTransformer,1.0238,0.8575,1.0118
+Face Head-Pose (Private),private,PatchTST,1.0249,0.8602,1.0124
+Face Head-Pose (Private),private,TiDE,1.0209,0.8595,1.0104
+Face Head-Pose (Private),private,DLinear,1.0501,0.8653,1.0248
+Weather CO2 (Public),public,TimeXer,0.3755,0.4893,0.6128
+Weather CO2 (Public),public,iTransformer,0.3732,0.4877,0.6109
+Weather CO2 (Public),public,PatchTST,0.372,0.4876,0.6099
+Weather CO2 (Public),public,TiDE,0.3731,0.4882,0.6108
+Weather CO2 (Public),public,DLinear,0.3882,0.4973,0.623

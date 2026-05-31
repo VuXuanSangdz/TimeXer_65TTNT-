@@ -1,0 +1,6 @@
+Criterion,TimeXer,iTransformer,PatchTST,TiDE,DLinear
+Exogenous variate-level embedding,Yes (V token),No (all variates equal),No (concat/add only),Concat at input,Concat at input
+Patch-level temporal modeling,Yes,No (linear projection),Yes,No,No
+Global bridge token (G),Yes,No,No,No,No
+Cross-attention exo→endo,Yes,Self-attn only,No,No,No
+Handles irregular exo length,Designed for it,Limited,Limited,Limited,Limited

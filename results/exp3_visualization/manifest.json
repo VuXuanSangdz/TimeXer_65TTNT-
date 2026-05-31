@@ -1,0 +1,50 @@
+[
+  {
+    "dataset": "private",
+    "sample": 1,
+    "files": [
+      "private_sample1_timexer.png",
+      "private_sample1_comparison.png"
+    ]
+  },
+  {
+    "dataset": "private",
+    "sample": 2,
+    "files": [
+      "private_sample2_timexer.png",
+      "private_sample2_comparison.png"
+    ]
+  },
+  {
+    "dataset": "private",
+    "sample": 3,
+    "files": [
+      "private_sample3_timexer.png",
+      "private_sample3_comparison.png"
+    ]
+  },
+  {
+    "dataset": "public",
+    "sample": 1,
+    "files": [
+      "public_sample1_timexer.png",
+      "public_sample1_comparison.png"
+    ]
+  },
+  {
+    "dataset": "public",
+    "sample": 2,
+    "files": [
+      "public_sample2_timexer.png",
+      "public_sample2_comparison.png"
+    ]
+  },
+  {
+    "dataset": "public",
+    "sample": 3,
+    "files": [
+      "public_sample3_timexer.png",
+      "public_sample3_comparison.png"
+    ]
+  }
+]

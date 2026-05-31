@@ -1,0 +1,7 @@
+Variant,Description,Expected
+full,"P+G endo, V exo, Cross-Attn",Best overall
+no_global,Remove global token G,Weaker exo→patch bridge
+exo_patch,Exo patch embed instead of variate,Noisy exo representation
+exo_add,Add exo summary instead of cross-attn,"Simpler fusion, worse"
+exo_concat,Concat fusion,Moderate degradation
+no_exo,Remove all exogenous vars,Largest drop if exo informative

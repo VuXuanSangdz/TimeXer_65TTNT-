@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimeXer Head-Pose Forecast — Demo</title>
+  <style>
+    :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --accent:#38bdf8; --muted:#94a3b8; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+    header { padding:2.5rem 1.5rem; text-align:center; background:linear-gradient(135deg,#0f172a,#1e3a5f); border-bottom:1px solid #334155; }
+    header h1 { font-size:1.8rem; color:var(--accent); }
+    header p { color:var(--muted); max-width:720px; margin:.5rem auto 0; }
+    main { max-width:1100px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+    section { background:var(--card); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem; border:1px solid #334155; }
+    h2 { color:var(--accent); margin-bottom:1rem; font-size:1.25rem; }
+    h3 { color:#7dd3fc; margin:1rem 0 .5rem; font-size:1rem; }
+    .data-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    .data-table th { background:#334155; padding:.5rem; text-align:left; }
+    .data-table td { padding:.45rem .5rem; border-bottom:1px solid #334155; }
+    .data-table tr:hover td { background:#263248; }
+    .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1rem; }
+    figure { background:#0f172a; border-radius:8px; overflow:hidden; border:1px solid #334155; }
+    figure img { width:100%; display:block; }
+    figcaption { padding:.5rem .75rem; font-size:.8rem; color:var(--muted); }
+    .links a { color:var(--accent); margin-right:1rem; }
+    .badge { display:inline-block; background:#334155; padding:.2rem .6rem; border-radius:999px; font-size:.75rem; margin:.2rem; }
+    footer { text-align:center; padding:2rem; color:var(--muted); font-size:.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TimeXer: Dự báo Head Pose từ Webcam</h1>
+    <p>Triển khai mô hình TimeXer (NeurIPS 2024) cho bài toán forecasting with exogenous variables.
+       Private data: sinh trắc khuôn mặt tự thu thập. Public data: Weather CO2 benchmark.</p>
+    <div style="margin-top:1rem">
+      <span class="badge">Endogenous: head_yaw / CO2</span>
+      <span class="badge">Exogenous: light, EAR, mouth / climate</span>
+      <span class="badge">seq_len=96, pred_len=24</span>
+    </div>
+  </header>
+  <main>
+    <section class="links">
+      <h2>Links</h2>
+      <p>
+        <a href="https://github.com/VuXuanSangdz/TimeXer_65TTNT-">GitHub Repository</a>
+        <a href="https://vuxuansangdz.github.io/TimeXer_65TTNT-/">GitHub Pages Demo</a>
+        <a href="https://github.com/thuml/TimeXer">TimeXer Official</a>
+      </p>
+      <h3>Data</h3>
+      <p><strong>Public:</strong> <code>data/public/weather_public.csv</code> — Weather-style benchmark</p>
+      <p><strong>Private:</strong> <code>data/private/face_headpose_private.csv</code> + raw videos on Google Drive</p>
+    </section>
+
+    <section>
+      <h2>RQ1: So sánh mô hình (Định lượng)</h2>
+      <table class="dataframe data-table" id="rq1-quant">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Dataset</th>
+      <th>DatasetKey</th>
+      <th>Model</th>
+      <th>MSE</th>
+      <th>MAE</th>
+      <th>RMSE</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>TimeXer</td>
+      <td>1.0302</td>
+      <td>0.8605</td>
+      <td>1.0150</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>iTransformer</td>
+      <td>1.0238</td>
+      <td>0.8575</td>
+      <td>1.0118</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>PatchTST</td>
+      <td>1.0249</td>
+      <td>0.8602</td>
+      <td>1.0124</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>TiDE</td>
+      <td>1.0209</td>
+      <td>0.8595</td>
+      <td>1.0104</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>DLinear</td>
+      <td>1.0501</td>
+      <td>0.8653</td>
+      <td>1.0248</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>TimeXer</td>
+      <td>0.3755</td>
+      <td>0.4893</td>
+      <td>0.6128</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>iTransformer</td>
+      <td>0.3732</td>
+      <td>0.4877</td>
+      <td>0.6109</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>PatchTST</td>
+      <td>0.3720</td>
+      <td>0.4876</td>
+      <td>0.6099</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>TiDE</td>
+      <td>0.3731</td>
+      <td>0.4882</td>
+      <td>0.6108</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>DLinear</td>
+      <td>0.3882</td>
+      <td>0.4973</td>
+      <td>0.6230</td>
+    </tr>
+  </tbody>
+</table>
+    </section>
+
+    <section>
+      <h2>RQ1: So sánh mô hình (Định tính)</h2>
+      <table class="dataframe data-table" id="rq1-qual">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Criterion</th>
+      <th>TimeXer</th>
+      <th>iTransformer</th>
+      <th>PatchTST</th>
+      <th>TiDE</th>
+      <th>DLinear</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Exogenous variate-level embedding</td>
+      <td>Yes (V token)</td>
+      <td>No (all variates equal)</td>
+      <td>No (concat/add only)</td>
+      <td>Concat at input</td>
+      <td>Concat at input</td>
+    </tr>
+    <tr>
+      <td>Patch-level temporal modeling</td>
+      <td>Yes</td>
+      <td>No (linear projection)</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>Global bridge token (G)</td>
+      <td>Yes</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>Cross-attention exo→endo</td>
+      <td>Yes</td>
+      <td>Self-attn only</td>
+      <td>No</td>
+      <td>No</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td>Handles irregular exo length</td>
+      <td>Designed for it</td>
+      <td>Limited</td>
+      <td>Limited</td>
+      <td>Limited</td>
+      <td>Limited</td>
+    </tr>
+  </tbody>
+</table>
+    </section>
+
+    <section>
+      <h2>RQ2: Ablation Study (Định lượng)</h2>
+      <table class="dataframe data-table" id="rq2-ablation">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Dataset</th>
+      <th>DatasetKey</th>
+      <th>Ablation</th>
+      <th>Description</th>
+      <th>MSE</th>
+      <th>MAE</th>
+      <th>RMSE</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>full</td>
+      <td>Full model (P+G, V, Cross-Attn)</td>
+      <td>1.0217</td>
+      <td>0.8606</td>
+      <td>1.0108</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>no_global</td>
+      <td>Remove global token (P only)</td>
+      <td>1.0204</td>
+      <td>0.8586</td>
+      <td>1.0101</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>exo_patch</td>
+      <td>Replace exo variate with patch embed</td>
+      <td>1.0219</td>
+      <td>0.8581</td>
+      <td>1.0109</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>exo_add</td>
+      <td>Add exo summary instead of cross-attn</td>
+      <td>1.0212</td>
+      <td>0.8585</td>
+      <td>1.0105</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>exo_concat</td>
+      <td>Concat exo instead of cross-attn</td>
+      <td>1.0198</td>
+      <td>0.8588</td>
+      <td>1.0099</td>
+    </tr>
+    <tr>
+      <td>Face Head-Pose (Private)</td>
+      <td>private</td>
+      <td>no_exo</td>
+      <td>Remove exogenous variables</td>
+      <td>1.0207</td>
+      <td>0.8575</td>
+      <td>1.0103</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>full</td>
+      <td>Full model (P+G, V, Cross-Attn)</td>
+      <td>0.3806</td>
+      <td>0.4926</td>
+      <td>0.6169</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>no_global</td>
+      <td>Remove global token (P only)</td>
+      <td>0.3832</td>
+      <td>0.4952</td>
+      <td>0.6190</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>exo_patch</td>
+      <td>Replace exo variate with patch embed</td>
+      <td>0.3834</td>
+      <td>0.4959</td>
+      <td>0.6192</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>exo_add</td>
+      <td>Add exo summary instead of cross-attn</td>
+      <td>0.3736</td>
+      <td>0.4874</td>
+      <td>0.6112</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>exo_concat</td>
+      <td>Concat exo instead of cross-attn</td>
+      <td>0.3763</td>
+      <td>0.4893</td>
+      <td>0.6134</td>
+    </tr>
+    <tr>
+      <td>Weather CO2 (Public)</td>
+      <td>public</td>
+      <td>no_exo</td>
+      <td>Remove exogenous variables</td>
+      <td>0.3848</td>
+      <td>0.4960</td>
+      <td>0.6203</td>
+    </tr>
+  </tbody>
+</table>
+    </section>
+
+    <section>
+      <h2>RQ3: Minh họa dự đoán thực tế</h2>
+      <div class="gallery"><figure><img src="assets/private_sample1_comparison.png" alt="private_sample1_comparison"><figcaption>private sample1 comparison</figcaption></figure>
+<figure><img src="assets/private_sample1_timexer.png" alt="private_sample1_timexer"><figcaption>private sample1 timexer</figcaption></figure>
+<figure><img src="assets/private_sample2_comparison.png" alt="private_sample2_comparison"><figcaption>private sample2 comparison</figcaption></figure>
+<figure><img src="assets/private_sample2_timexer.png" alt="private_sample2_timexer"><figcaption>private sample2 timexer</figcaption></figure>
+<figure><img src="assets/private_sample3_comparison.png" alt="private_sample3_comparison"><figcaption>private sample3 comparison</figcaption></figure>
+<figure><img src="assets/private_sample3_timexer.png" alt="private_sample3_timexer"><figcaption>private sample3 timexer</figcaption></figure>
+<figure><img src="assets/public_sample1_comparison.png" alt="public_sample1_comparison"><figcaption>public sample1 comparison</figcaption></figure>
+<figure><img src="assets/public_sample1_timexer.png" alt="public_sample1_timexer"><figcaption>public sample1 timexer</figcaption></figure>
+<figure><img src="assets/public_sample2_comparison.png" alt="public_sample2_comparison"><figcaption>public sample2 comparison</figcaption></figure>
+<figure><img src="assets/public_sample2_timexer.png" alt="public_sample2_timexer"><figcaption>public sample2 timexer</figcaption></figure>
+<figure><img src="assets/public_sample3_comparison.png" alt="public_sample3_comparison"><figcaption>public sample3 comparison</figcaption></figure>
+<figure><img src="assets/public_sample3_timexer.png" alt="public_sample3_timexer"><figcaption>public sample3 timexer</figcaption></figure></div>
+    </section>
+  </main>
+  <footer>TimeXer Head-Pose Forecast Project — NeurIPS 2024 reproduction</footer>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "dataset_name": "Weather Benchmark Subset (Public)",
+  "description": "Public weather time series following TimeXer exogenous forecasting paradigm.",
+  "source_reference": "Inspired by Weather dataset in Time-Series-Library / TimeXer paper",
+  "public_download": "https://github.com/thuml/Time-Series-Library",
+  "endo_variable": "co2_concentration",
+  "exo_variables": [
+    "temperature",
+    "humidity",
+    "pressure",
+    "wind_speed"
+  ],
+  "sampling_rate": "10 minutes",
+  "total_rows": 8000
+}

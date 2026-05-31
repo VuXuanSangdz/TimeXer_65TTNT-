@@ -1,0 +1,19 @@
+{
+  "research_question": "RQ1: Model comparison with similar-idea baselines",
+  "best_private": {
+    "Dataset": "Face Head-Pose (Private)",
+    "DatasetKey": "private",
+    "Model": "TiDE",
+    "MSE": 1.0209,
+    "MAE": 0.8595,
+    "RMSE": 1.0104
+  },
+  "best_public": {
+    "Dataset": "Weather CO2 (Public)",
+    "DatasetKey": "public",
+    "Model": "PatchTST",
+    "MSE": 0.372,
+    "MAE": 0.4876,
+    "RMSE": 0.6099
+  }
+}

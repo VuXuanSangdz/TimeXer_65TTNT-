@@ -1,0 +1,13 @@
+DatasetKey,Ablation,MSE_delta_pct
+private,full,0.0
+private,no_global,-0.13
+private,exo_patch,0.02
+private,exo_add,-0.05
+private,exo_concat,-0.19
+private,no_exo,-0.1
+public,full,0.0
+public,no_global,0.68
+public,exo_patch,0.74
+public,exo_add,-1.84
+public,exo_concat,-1.13
+public,no_exo,1.1

@@ -1,0 +1,13 @@
+Dataset,DatasetKey,Ablation,Description,MSE,MAE,RMSE
+Face Head-Pose (Private),private,full,"Full model (P+G, V, Cross-Attn)",1.0217,0.8606,1.0108
+Face Head-Pose (Private),private,no_global,Remove global token (P only),1.0204,0.8586,1.0101
+Face Head-Pose (Private),private,exo_patch,Replace exo variate with patch embed,1.0219,0.8581,1.0109
+Face Head-Pose (Private),private,exo_add,Add exo summary instead of cross-attn,1.0212,0.8585,1.0105
+Face Head-Pose (Private),private,exo_concat,Concat exo instead of cross-attn,1.0198,0.8588,1.0099
+Face Head-Pose (Private),private,no_exo,Remove exogenous variables,1.0207,0.8575,1.0103
+Weather CO2 (Public),public,full,"Full model (P+G, V, Cross-Attn)",0.3806,0.4926,0.6169
+Weather CO2 (Public),public,no_global,Remove global token (P only),0.3832,0.4952,0.619
+Weather CO2 (Public),public,exo_patch,Replace exo variate with patch embed,0.3834,0.4959,0.6192
+Weather CO2 (Public),public,exo_add,Add exo summary instead of cross-attn,0.3736,0.4874,0.6112
+Weather CO2 (Public),public,exo_concat,Concat exo instead of cross-attn,0.3763,0.4893,0.6134
+Weather CO2 (Public),public,no_exo,Remove exogenous variables,0.3848,0.496,0.6203
