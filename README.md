@@ -139,7 +139,13 @@ Forecast outputs are saved as numerical results and summary files under `./resul
 ## Project Structure
 
 ```
-├── models/                # TimeXer + baseline models (main)
+├── models/
+│   ├── TimeXer.py         # Proposed model (NeurIPS 2024)
+│   ├── iTransformer.py    # Baseline: inverted Transformer
+│   ├── PatchTST.py        # Baseline: patch-level Transformer
+│   ├── TiDE.py            # Baseline: dense encoder
+│   ├── DLinear.py         # Baseline: decomposition linear
+│   └── baselines.py       # Model registry for experiments
 ├── layers/                # Embedding layers (patch, variate, global token)
 ├── data/private/          # Face head-pose time series (private)
 ├── data/public/           # Weather CO2 benchmark (public)
