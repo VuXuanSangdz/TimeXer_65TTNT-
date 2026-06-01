@@ -1,7 +1,9 @@
 {
   "dataset_name": "Face Head-Pose Biometric Time Series (Private)",
-  "description": "Self-collected webcam sessions converted to time series. Endogenous: head_yaw. Exogenous: ambient_light, eye_aspect_ratio, mouth_open_ratio.",
-  "collection_method": "Webcam recording + MediaPipe feature extraction (see scripts/extract_from_webcam.py)",
+  "data_source": "simulated",
+  "description": "Synthetic time series mimicking webcam+MediaPipe dynamics. Endogenous: head_yaw. Exogenous: ambient_light, eye_aspect_ratio, mouth_open_ratio.",
+  "generation_script": "src/data/generate_datasets.py::_simulate_session",
+  "collection_method_real": "Webcam recording + MediaPipe (scripts/extract_from_webcam.py)",
   "sampling_rate_hz": 5.0,
   "n_sessions": 5,
   "duration_per_session_sec": 600,
@@ -12,6 +14,14 @@
     "mouth_open_ratio"
   ],
   "total_rows": 15000,
+  "random_seeds_per_session": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
   "privacy_note": "Raw videos stored separately on Google Drive (not in repo). Only extracted CSV included.",
-  "drive_link_placeholder": "https://drive.google.com/drive/folders/YOUR_PRIVATE_FOLDER_ID"
+  "drive_link": "https://drive.google.com/drive/folders/YOUR_PRIVATE_FOLDER_ID",
+  "drive_link_status": "placeholder — update after uploading real sessions"
 }

@@ -1,4 +1,33 @@
 {
   "research_question": "RQ2: Module ablation study",
-  "variants": 6
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "variants": 6,
+  "train_config": {
+    "seq_len": 96,
+    "pred_len": 24,
+    "batch_size": 64,
+    "train_ratio": 0.7,
+    "val_ratio": 0.1,
+    "test_ratio": 0.2,
+    "lr": 0.001,
+    "optimizer": "Adam",
+    "loss": "MSE",
+    "epochs": 12,
+    "patience": 4,
+    "patch_len": 8,
+    "d_model": 128,
+    "n_heads": 4,
+    "e_layers": 2,
+    "dropout": 0.1,
+    "scaler": "StandardScaler (fit on train only)",
+    "default_seeds": [
+      42,
+      123,
+      456
+    ]
+  }
 }

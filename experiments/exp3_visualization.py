@@ -18,12 +18,12 @@ import torch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from experiments.config import DATASETS, build_loaders, build_model, get_device
+from experiments.config import DATASETS, TRAIN, build_loaders, build_model, get_device
+from src.utils.seed import set_seed
 from src.utils.plotting import plot_comparison, plot_forecast
 from src.utils.trainer import Trainer
 
 MODELS_FOR_PLOT = ["TimeXer", "iTransformer", "PatchTST", "DLinear"]
-EPOCHS = 6
 N_SAMPLES = 3
 
 
@@ -37,7 +37,8 @@ def _predict_sample(model, x_endo, x_exo, device, ablation="full"):
     return model(x_endo, x_exo).cpu().numpy().flatten()
 
 
-def run():
+def run(seed: int = 42):
+    set_seed(seed)
     device = get_device()
     out_dir = ROOT / "results" / "exp3_visualization"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -55,7 +56,12 @@ def run():
             print(f"[{ds_key}] Training {name} for visualization...")
             model = build_model(name, n_exo)
             trainer = Trainer(model, device)
-            trainer.fit(loaders["train"], loaders["val"], epochs=EPOCHS, patience=4)
+            trainer.fit(
+                loaders["train"],
+                loaders["val"],
+                epochs=TRAIN.epochs,
+                patience=TRAIN.patience,
+            )
             trained[name] = model
 
         # Pick sample indices spread across test set
@@ -87,7 +93,20 @@ def run():
             )
             manifest.append({"dataset": ds_key, "sample": i + 1, "files": [f"{base}_timexer.png", f"{base}_comparison.png"]})
 
-    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    (out_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "research_question": "RQ3: Forecast evaluation",
+                "seed": seed,
+                "samples_per_dataset": N_SAMPLES,
+                "models": MODELS_FOR_PLOT,
+                "note": "Figures saved under results/exp3_visualization/ (not embedded in README/Pages).",
+                "cases": manifest,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
     print(f"\nSaved visualizations to {out_dir}")
 
 

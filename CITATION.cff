@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "TimeXer_65TTNT"
+message: "If you use this repository, please cite the original TimeXer paper."
+authors:
+  - family-names: VuXuanSangdz
+    affiliation: NorthWest University
+repository-code: "https://github.com/VuXuanSangdz/TimeXer_65TTNT-"
+license: MIT
+keywords:
+  - time series forecasting
+  - exogenous variables
+  - TimeXer
+  - transformer
+preferred-citation:
+  type: article
+  title: "Timexer: Empowering transformers for time series forecasting with exogenous variables"
+  authors:
+    - family-names: Wang
+      given-names: Yuxuan
+  journal: "Advances in Neural Information Processing Systems"
+  year: 2024

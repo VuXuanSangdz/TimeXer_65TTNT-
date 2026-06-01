@@ -1,110 +1,136 @@
 # TimeXer_65TTNT
 
-This repo is a course reproduction of [TimeXer: Empowering Transformers for Time Series Forecasting with Exogenous Variables](https://arxiv.org/abs/2402.19072) (NeurIPS 2024), based on the official implementation at [thuml/TimeXer](https://github.com/thuml/TimeXer).
+Course reproduction of [TimeXer: Empowering Transformers for Time Series Forecasting with Exogenous Variables](https://arxiv.org/abs/2402.19072) (NeurIPS 2024), inspired by [thuml/TimeXer](https://github.com/thuml/TimeXer).
 
-**Demo:** [https://vuxuansangdz.github.io/TimeXer_65TTNT-/](https://vuxuansangdz.github.io/TimeXer_65TTNT-/)
+**Demo:** [https://vuxuansangdz.github.io/TimeXer_65TTNT-/](https://vuxuansangdz.github.io/TimeXer_65TTNT-/)  
+**Full protocol:** [`EXPERIMENTAL_SETUP.md`](EXPERIMENTAL_SETUP.md) · **Research report (VI):** [`RESEARCH_REPORT.md`](RESEARCH_REPORT.md)
+
+---
+
+## Scope & Scientific Positioning
+
+| | This repository | Official TimeXer |
+|---|-----------------|------------------|
+| **Goal** | RQ1–RQ3 on custom private + public datasets | Paper benchmarks (Weather, EPF, …) |
+| **Code** | Standalone simplified reimplementation | `run.py` + Time-Series-Library |
+| **Data in repo** | Simulated CSV (documented, reproducible) | Official benchmark downloads |
+| **Claim** | Documented architectural comparison under fixed protocol | SOTA benchmark numbers |
+
+We report results transparently on **simulated datasets** (see [Data Provenance](#data-provenance)). This supports reproducible methodology; it does **not** claim numerical equivalence with NeurIPS paper tables.
+
+---
 
 ## Introduction
 
-This project focuses on **forecasting with exogenous variables** — a practical paradigm where the target series (endogenous) is predicted using auxiliary covariates (exogenous) that do not need to be forecast themselves.
+This project studies **forecasting with exogenous variables**: predict an endogenous target using auxiliary covariates that need not be forecast.
 
-We apply TimeXer to a **private face biometric time-series** task: forecasting **head yaw** from webcam sessions, using ambient light, eye aspect ratio, and mouth openness as exogenous variables. A **public weather benchmark** (CO2 concentration with climate covariates) is included for comparison with the original paper setting.
+- **Private task:** forecast **head yaw** from face biometric time series (webcam / MediaPipe paradigm)
+- **Public task:** forecast **CO₂ concentration** with climate covariates (Weather-style benchmark)
 
-TimeXer empowers the canonical Transformer to reconcile endogenous and exogenous information through patch-level and variate-level representations, achieving competitive results on both datasets.
+TimeXer uses **patch-level** endogenous tokens, **variate-level** exogenous tokens, and a **learnable global token** bridged via self- and cross-attention.
 
-## Overall Architecture
+---
 
-TimeXer employs **patch-level** representations for endogenous variables and **variate-level** representations for exogenous variables, with a **learnable global token** as a bridge in-between. With this design, TimeXer can jointly capture:
+## Data Provenance
 
-- **Intra-endogenous temporal dependencies** (patch-wise self-attention)
-- **Exogenous-to-endogenous correlations** (cross-attention from global token to exogenous variate tokens)
+> **Important:** CSV files currently in the repository are **synthetically generated** by `src/data/generate_datasets.py` to validate the pipeline. Metadata records `data_source: simulated`.
 
-Key modules: Patch token (P), Global token (G), Variate token (V), Self-attention, Cross-attention.
-
-## Dataset
-
-### Private — Face Head-Pose Time Series
+### Private — Face Head-Pose
 
 | Variable | Role | Description |
 |----------|------|-------------|
-| `head_yaw` | Endogenous | Horizontal head rotation angle (degrees) |
-| `ambient_light` | Exogenous | Frame brightness level |
+| `head_yaw` | Endogenous | Horizontal head rotation (degrees) |
+| `ambient_light` | Exogenous | Frame brightness |
 | `eye_aspect_ratio` | Exogenous | Eye openness (EAR) |
 | `mouth_open_ratio` | Exogenous | Mouth openness |
 
-- **Path:** `./data/private/face_headpose_private.csv`
-- **Collection:** Webcam recording + MediaPipe feature extraction (`scripts/extract_from_webcam.py`)
-- **Raw videos (private):** [Google Drive](https://drive.google.com/drive/folders/YOUR_PRIVATE_FOLDER_ID)
+- **File:** `./data/private/face_headpose_private.csv` (15,000 rows, 5 Hz, 5 sessions)
+- **Source type:** `simulated` — replace with `scripts/extract_from_webcam.py` for real data
+- **Raw videos:** [Google Drive placeholder](https://drive.google.com/drive/folders/YOUR_PRIVATE_FOLDER_ID) — update when uploaded
 
-### Public — Weather CO2 Benchmark
+### Public — Weather CO₂
 
 | Variable | Role |
 |----------|------|
 | `co2_concentration` | Endogenous |
 | `temperature`, `humidity`, `pressure`, `wind_speed` | Exogenous |
 
-- **Path:** `./data/public/weather_public.csv`
-- **Reference:** [thuml/Time-Series-Library](https://github.com/thuml/Time-Series-Library)
+- **File:** `./data/public/weather_public.csv` (8,000 rows, 10-min intervals)
+- **Source type:** `simulated` — schema follows [Time-Series-Library Weather](https://github.com/thuml/Time-Series-Library)
+
+See `data/*/metadata.json` and `data/*/DATA_LINK.md` for full provenance.
+
+---
+
+## Experimental Setup
+
+| Parameter | Value |
+|-----------|-------|
+| `seq_len` / `pred_len` | 96 / 24 |
+| Train / Val / Test split | 70% / 10% / 20% (chronological) |
+| Scaler | StandardScaler (fit on train only) |
+| Optimizer / LR | Adam / 1e-3 |
+| Loss | MSE |
+| Epochs / Patience | 12 / 4 |
+| Random seeds | 42, 123, 456 |
+| Metrics | MSE, MAE, RMSE (test set) |
+
+Models compared: **TimeXer**, **iTransformer**, **PatchTST**, **TiDE**, **DLinear**.
+
+Full hyperparameters and limitations: [`EXPERIMENTAL_SETUP.md`](EXPERIMENTAL_SETUP.md).
+
+---
 
 ## Usage
 
-1. Clone this repository and install dependencies.
-
-```
+```bash
 pip install -r requirements.txt
-```
-
-2. Generate datasets (if not already present).
-
-```
 python src/data/generate_datasets.py
-```
-
-3. Run all experiments (model comparison, ablation, evaluation).
-
-```
 python scripts/run_all.py
 ```
 
-Or run each research question separately:
+Or run each research question:
 
-```
-python experiments/exp1_model_comparison.py   # RQ1: model comparison
-python experiments/exp2_ablation.py             # RQ2: ablation study
-python experiments/exp3_visualization.py        # RQ3: forecast evaluation
+```bash
+python experiments/exp1_model_comparison.py --seeds 42,123,456   # RQ1
+python experiments/exp2_ablation.py --seeds 42,123,456             # RQ2
+python experiments/exp3_visualization.py                           # RQ3
+python scripts/build_github_pages.py
 ```
 
-4. Collect real private data from webcam (optional).
+Collect real private data (optional):
 
-```
+```bash
 python scripts/extract_from_webcam.py --output data/private/face_headpose_real.csv --seconds 120
 ```
 
+---
+
 ## Main Results
 
-We evaluate TimeXer on forecasting with exogenous variables using two datasets. Metrics: MSE, MAE, RMSE (lower is better). Settings: `seq_len=96`, `pred_len=24`.
+Metrics are **mean ± std over 3 seeds** (42, 123, 456). Per-seed CSVs: `results/exp1_comparison/quantitative_comparison_per_seed.csv`.
 
 ### RQ1 — Model Comparison
 
-**Private dataset (Face Head-Pose)**
+**Private dataset (Face Head-Pose, simulated)**
 
 | Model | MSE | MAE | RMSE |
 |-------|-----|-----|------|
-| TimeXer | 1.0302 | 0.8605 | 1.0150 |
-| iTransformer | 1.0238 | 0.8575 | 1.0118 |
-| PatchTST | 1.0249 | 0.8602 | 1.0124 |
-| TiDE | **1.0209** | **0.8595** | **1.0104** |
-| DLinear | 1.0501 | 0.8653 | 1.0248 |
+| TiDE | **1.0205 ± 0.0004** | **0.8603 ± 0.0005** | **1.0102 ± 0.0002** |
+| iTransformer | 1.0225 ± 0.0006 | 0.8577 ± 0.0005 | 1.0112 ± 0.0003 |
+| TimeXer | 1.0243 ± 0.0029 | 0.8603 ± 0.0013 | 1.0121 ± 0.0014 |
+| PatchTST | 1.0264 ± 0.0027 | 0.8602 ± 0.0004 | 1.0131 ± 0.0013 |
+| DLinear | 1.0507 ± 0.0004 | 0.8652 ± 0.0003 | 1.0251 ± 0.0002 |
 
-**Public dataset (Weather CO2)**
+**Public dataset (Weather CO₂, simulated)**
 
 | Model | MSE | MAE | RMSE |
 |-------|-----|-----|------|
-| TimeXer | 0.3755 | 0.4893 | 0.6128 |
-| iTransformer | 0.3732 | 0.4877 | 0.6109 |
-| PatchTST | **0.3720** | **0.4876** | **0.6099** |
-| TiDE | 0.3731 | 0.4882 | 0.6108 |
-| DLinear | 0.3882 | 0.4973 | 0.6230 |
+| TiDE | **0.3720 ± 0.0013** | **0.4882 ± 0.0006** | **0.6099 ± 0.0010** |
+| PatchTST | 0.3741 ± 0.0032 | 0.4890 ± 0.0019 | 0.6116 ± 0.0026 |
+| iTransformer | 0.3745 ± 0.0024 | 0.4886 ± 0.0012 | 0.6119 ± 0.0020 |
+| TimeXer | 0.3798 ± 0.0011 | 0.4919 ± 0.0008 | 0.6162 ± 0.0009 |
+| DLinear | 0.3877 ± 0.0020 | 0.4973 ± 0.0019 | 0.6226 ± 0.0017 |
 
 **Qualitative comparison**
 
@@ -115,50 +141,80 @@ We evaluate TimeXer on forecasting with exogenous variables using two datasets. 
 | Global bridge token | Yes | No | No | No | No |
 | Cross-attention exo→endo | Yes | No | No | No | No |
 
-Full results: `./results/exp1_comparison/`
+Full tables: `./results/exp1_comparison/`
 
 ### RQ2 — Ablation Study
 
-**Public dataset (Weather CO2)**
+Ablation on **both** datasets (mean ± std over seeds 42, 123, 456).
 
-| Design | MSE | MAE | RMSE |
-|--------|-----|-----|------|
-| Full (P+G, V, Cross-Attn) | 0.3806 | 0.4926 | 0.6169 |
-| Remove global token | 0.3832 | 0.4952 | 0.6190 |
-| Exo patch embed | 0.3834 | 0.4959 | 0.6192 |
-| Exo add fusion | **0.3736** | **0.4874** | **0.6112** |
-| Exo concat fusion | 0.3763 | 0.4893 | 0.6134 |
-| No exogenous | 0.3848 | 0.4960 | 0.6203 |
+**Public dataset (Weather CO₂)**
 
-Removing exogenous variables or the global token degrades performance on the public dataset, confirming the importance of both modules. Full ablation tables: `./results/exp2_ablation/`
+| Design | MSE | MAE | RMSE | ΔMSE vs full |
+|--------|-----|-----|------|--------------|
+| exo_add | **0.3753 ± 0.0036** | 0.4888 ± 0.0025 | 0.6125 ± 0.0029 | −0.74% |
+| full (P+G, V, Cross-Attn) | 0.3781 ± 0.0004 | 0.4905 ± 0.0005 | 0.6149 ± 0.0003 | 0% |
+| exo_concat | 0.3777 ± 0.0019 | 0.4906 ± 0.0010 | 0.6146 ± 0.0016 | −0.11% |
+| exo_patch | 0.3855 ± 0.0015 | 0.4968 ± 0.0009 | 0.6209 ± 0.0013 | +1.96% |
+| no_exo | 0.3856 ± 0.0019 | 0.4963 ± 0.0016 | 0.6210 ± 0.0016 | +1.99% |
+| no_global | 0.3856 ± 0.0030 | 0.4959 ± 0.0012 | 0.6210 ± 0.0024 | +1.99% |
+
+Removing exogenous variables or the global token increases MSE by ~2% on public data, supporting their role in the full architecture. Private ablation deltas are smaller (see `ablation_delta.csv`).
+
+Full tables: `./results/exp2_ablation/`
 
 ### RQ3 — Forecast Evaluation
 
-Forecast outputs are saved as numerical results and summary files under `./results/exp3_visualization/`. Each experiment compares predicted vs. ground-truth sequences over a 24-step horizon given 96-step history.
+12 forecast figures (3 test windows × 2 datasets × 2 plot types) in `./results/exp3_visualization/`:
+
+- `*_timexer.png` — TimeXer: history + ground truth + prediction
+- `*_comparison.png` — TimeXer vs iTransformer, PatchTST, DLinear
+
+Manifest: `results/exp3_visualization/manifest.json`
+
+---
+
+## Limitations
+
+1. Simulated data — results validate pipeline, not real-world SOTA
+2. Simplified reimplementation — not official `run.py` fork
+3. No formal statistical significance tests (mean ± std over seeds only)
+4. Private Drive link is a placeholder until real videos are uploaded
+5. Paper benchmark numbers require official Time-Series-Library datasets
+
+---
 
 ## Project Structure
 
 ```
 ├── models/
 │   ├── TimeXer.py         # Proposed model (NeurIPS 2024)
-│   ├── iTransformer.py    # Baseline: inverted Transformer
-│   ├── PatchTST.py        # Baseline: patch-level Transformer
-│   ├── TiDE.py            # Baseline: dense encoder
-│   ├── DLinear.py         # Baseline: decomposition linear
-│   └── baselines.py       # Model registry for experiments
-├── layers/                # Embedding layers (patch, variate, global token)
-├── data/private/          # Face head-pose time series (private)
-├── data/public/           # Weather CO2 benchmark (public)
-├── src/                   # Data loaders, trainer, utils
-├── experiments/           # RQ1, RQ2, RQ3 scripts
-├── results/               # Quantitative & qualitative results
-├── scripts/               # run_all, extract_from_webcam
-└── docs/                  # GitHub Pages
+│   ├── iTransformer.py    # Baseline
+│   ├── PatchTST.py        # Baseline
+│   ├── TiDE.py            # Baseline
+│   ├── DLinear.py         # Baseline
+│   └── baselines.py       # Model registry
+├── layers/                # Embedding layers
+├── data/private/          # Private CSV + metadata
+├── data/public/           # Public CSV + metadata
+├── experiments/           # RQ1, RQ2, RQ3
+├── results/               # Quantitative + qualitative + figures
+├── scripts/               # run_all, extract_from_webcam, build_github_pages
+├── docs/                  # GitHub Pages
+├── EXPERIMENTAL_SETUP.md  # Full scientific protocol
+└── RESEARCH_REPORT.md     # Báo cáo nghiên cứu (Tiếng Việt)
 ```
+
+---
+
+## Authors
+
+**VuXuanSangdz** — Course project 65TTNT, NorthWest University.
+
+---
 
 ## Citation
 
-If you find this repo helpful, please cite the original TimeXer paper.
+If you use this repo, please cite the original TimeXer paper:
 
 ```
 @article{wang2024timexer,
@@ -169,15 +225,17 @@ If you find this repo helpful, please cite the original TimeXer paper.
 }
 ```
 
-## Acknowledgement
+---
 
-We appreciate the following repositories for their valuable code and efforts.
+## Acknowledgement
 
 - [TimeXer](https://github.com/thuml/TimeXer)
 - [Time-Series-Library](https://github.com/thuml/Time-Series-Library)
 - [iTransformer](https://github.com/thuml/iTransformer)
 - [PatchTST](https://github.com/yuqinie98/PatchTST)
 
+---
+
 ## Contact
 
-Course project — 65TTNT. Repository: [VuXuanSangdz/TimeXer_65TTNT-](https://github.com/VuXuanSangdz/TimeXer_65TTNT-)
+Repository: [VuXuanSangdz/TimeXer_65TTNT-](https://github.com/VuXuanSangdz/TimeXer_65TTNT-)

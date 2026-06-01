@@ -15,12 +15,34 @@ def _df_to_html(df: pd.DataFrame, table_id: str) -> str:
     return df.to_html(index=False, classes="data-table", table_id=table_id, border=0)
 
 
+def _load_aggregate(exp_dir: Path, name: str) -> pd.DataFrame:
+    agg_path = exp_dir / name
+    if agg_path.exists():
+        df = pd.read_csv(agg_path)
+        if "MSE_mean" in df.columns:
+            display = df.copy()
+            display["MSE"] = display.apply(
+                lambda r: f"{r['MSE_mean']:.4f} ± {r['MSE_std']:.4f}", axis=1
+            )
+            display["MAE"] = display.apply(
+                lambda r: f"{r['MAE_mean']:.4f} ± {r['MAE_std']:.4f}", axis=1
+            )
+            display["RMSE"] = display.apply(
+                lambda r: f"{r['RMSE_mean']:.4f} ± {r['RMSE_std']:.4f}", axis=1
+            )
+            keep = [c for c in display.columns if c in df.columns or c in ("MSE", "MAE", "RMSE")]
+            return display[keep]
+        return df
+    return pd.read_csv(exp_dir / name.replace("_aggregate", ""))
+
+
 def build():
     DOCS.mkdir(parents=True, exist_ok=True)
 
-    exp1_q = pd.read_csv(RESULTS / "exp1_comparison" / "quantitative_comparison.csv")
-    exp1_qual = pd.read_csv(RESULTS / "exp1_comparison" / "qualitative_comparison.csv")
-    exp2 = pd.read_csv(RESULTS / "exp2_ablation" / "ablation_quantitative.csv")
+    exp1_dir = RESULTS / "exp1_comparison"
+    exp1_q = _load_aggregate(exp1_dir, "quantitative_comparison_aggregate.csv")
+    exp1_qual = pd.read_csv(exp1_dir / "qualitative_comparison.csv")
+    exp2 = _load_aggregate(RESULTS / "exp2_ablation", "ablation_quantitative_aggregate.csv")
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -41,39 +63,56 @@ def build():
     .data-table th {{ background: #f6f8fa; border: 1px solid #d0d7de; padding: 0.5rem; text-align: left; }}
     .data-table td {{ border: 1px solid #d0d7de; padding: 0.45rem 0.5rem; }}
     .meta {{ color: #57606a; margin-bottom: 1.5rem; }}
+    .notice {{ background: #fff8c5; border: 1px solid #d4a72c; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; font-size: 0.9rem; }}
   </style>
 </head>
 <body>
   <h1>TimeXer_65TTNT</h1>
   <p class="meta">
-    Reproduction of
-    <a href="https://arxiv.org/abs/2402.19072">TimeXer (NeurIPS 2024)</a>
-    for forecasting with exogenous variables.
+    Course reproduction of
+    <a href="https://arxiv.org/abs/2402.19072">TimeXer (NeurIPS 2024)</a>.
     <a href="https://github.com/VuXuanSangdz/TimeXer_65TTNT-">GitHub Repository</a>
   </p>
 
+  <div class="notice">
+    <strong>Data provenance:</strong> CSV datasets in this project are <em>simulated</em> for reproducible pipeline validation.
+    See <code>EXPERIMENTAL_SETUP.md</code> for full protocol. Metrics below are mean ± std over seeds 42, 123, 456.
+  </div>
+
   <h2>Introduction</h2>
   <p>
-    This project applies TimeXer to forecast <strong>head yaw</strong> from face biometric time series (private dataset)
-    and <strong>CO2 concentration</strong> from weather data (public benchmark), using exogenous variables to improve prediction.
+    Forecast <strong>head yaw</strong> (private face biometric series) and <strong>CO₂ concentration</strong>
+    (public weather-style benchmark) using exogenous variables. Compare TimeXer with iTransformer, PatchTST, TiDE, DLinear.
   </p>
 
-  <h2>Overall Architecture</h2>
-  <p>
-    TimeXer uses patch-level representations for endogenous variables and variate-level representations for exogenous variables,
-    connected by a learnable global token via self-attention and cross-attention.
-  </p>
+  <h2>Experimental Setup</h2>
+  <ul>
+    <li><code>seq_len=96</code>, <code>pred_len=24</code></li>
+    <li>Split: 70% train / 10% val / 20% test (chronological)</li>
+    <li>Adam lr=1e-3, MSE loss, 12 epochs, early stopping patience=4</li>
+    <li>Seeds: 42, 123, 456</li>
+  </ul>
 
   <h2>Main Results</h2>
 
-  <h3>RQ1 — Model Comparison (Quantitative)</h3>
+  <h3>RQ1 — Model Comparison (mean ± std)</h3>
   {_df_to_html(exp1_q, "rq1-quant")}
 
-  <h3>RQ1 — Model Comparison (Qualitative)</h3>
+  <h3>RQ1 — Qualitative</h3>
   {_df_to_html(exp1_qual, "rq1-qual")}
 
-  <h3>RQ2 — Ablation Study</h3>
+  <h3>RQ2 — Ablation (mean ± std)</h3>
   {_df_to_html(exp2, "rq2-ablation")}
+
+  <h2>RQ3 — Forecast Figures</h2>
+  <p>PNG outputs: <code>results/exp3_visualization/</code> (12 files, not embedded here).</p>
+
+  <h2>Limitations</h2>
+  <ul>
+    <li>Simulated data — not official Time-Series-Library benchmarks</li>
+    <li>Simplified reimplementation — not official <code>run.py</code></li>
+    <li>No formal statistical significance tests</li>
+  </ul>
 
   <h2>Usage</h2>
   <pre>pip install -r requirements.txt

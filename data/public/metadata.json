@@ -1,8 +1,10 @@
 {
   "dataset_name": "Weather Benchmark Subset (Public)",
-  "description": "Public weather time series following TimeXer exogenous forecasting paradigm.",
-  "source_reference": "Inspired by Weather dataset in Time-Series-Library / TimeXer paper",
-  "public_download": "https://github.com/thuml/Time-Series-Library",
+  "data_source": "simulated",
+  "description": "Synthetic weather time series following TimeXer exogenous forecasting schema.",
+  "generation_script": "src/data/generate_datasets.py::generate_public_weather_subset",
+  "source_reference": "Schema inspired by Weather dataset in Time-Series-Library / TimeXer paper",
+  "official_download": "https://github.com/thuml/Time-Series-Library/tree/main/dataset",
   "endo_variable": "co2_concentration",
   "exo_variables": [
     "temperature",
@@ -11,5 +13,6 @@
     "wind_speed"
   ],
   "sampling_rate": "10 minutes",
-  "total_rows": 8000
+  "total_rows": 8000,
+  "random_seed": 0
 }

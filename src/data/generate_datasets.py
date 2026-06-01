@@ -82,19 +82,23 @@ def generate_private_dataset(output_dir: str | Path, n_sessions: int = 5, durati
 
     metadata = {
         "dataset_name": "Face Head-Pose Biometric Time Series (Private)",
+        "data_source": "simulated",
         "description": (
-            "Self-collected webcam sessions converted to time series. "
+            "Synthetic time series mimicking webcam+MediaPipe dynamics. "
             "Endogenous: head_yaw. Exogenous: ambient_light, eye_aspect_ratio, mouth_open_ratio."
         ),
-        "collection_method": "Webcam recording + MediaPipe feature extraction (see scripts/extract_from_webcam.py)",
+        "generation_script": "src/data/generate_datasets.py::_simulate_session",
+        "collection_method_real": "Webcam recording + MediaPipe (scripts/extract_from_webcam.py)",
         "sampling_rate_hz": fps,
         "n_sessions": n_sessions,
         "duration_per_session_sec": duration_sec,
         "endo_variable": "head_yaw",
         "exo_variables": ["ambient_light", "eye_aspect_ratio", "mouth_open_ratio"],
         "total_rows": len(df),
+        "random_seeds_per_session": [42 + sid for sid in range(n_sessions)],
         "privacy_note": "Raw videos stored separately on Google Drive (not in repo). Only extracted CSV included.",
-        "drive_link_placeholder": "https://drive.google.com/drive/folders/YOUR_PRIVATE_FOLDER_ID",
+        "drive_link": "https://drive.google.com/drive/folders/YOUR_PRIVATE_FOLDER_ID",
+        "drive_link_status": "placeholder — update after uploading real sessions",
     }
     meta_path = output_dir / "metadata.json"
     meta_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -142,13 +146,16 @@ def generate_public_weather_subset(output_dir: str | Path, n_rows: int = 8000):
 
     metadata = {
         "dataset_name": "Weather Benchmark Subset (Public)",
-        "description": "Public weather time series following TimeXer exogenous forecasting paradigm.",
-        "source_reference": "Inspired by Weather dataset in Time-Series-Library / TimeXer paper",
-        "public_download": "https://github.com/thuml/Time-Series-Library",
+        "data_source": "simulated",
+        "description": "Synthetic weather time series following TimeXer exogenous forecasting schema.",
+        "generation_script": "src/data/generate_datasets.py::generate_public_weather_subset",
+        "source_reference": "Schema inspired by Weather dataset in Time-Series-Library / TimeXer paper",
+        "official_download": "https://github.com/thuml/Time-Series-Library/tree/main/dataset",
         "endo_variable": "co2_concentration",
         "exo_variables": ["temperature", "humidity", "pressure", "wind_speed"],
         "sampling_rate": "10 minutes",
         "total_rows": n_rows,
+        "random_seed": 0,
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     print(f"Generated public weather subset -> {csv_path}")
